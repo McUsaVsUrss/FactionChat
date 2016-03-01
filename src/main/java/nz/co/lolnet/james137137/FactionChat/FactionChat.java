@@ -140,7 +140,6 @@ public class FactionChat extends JavaPlugin {
                 } catch (Exception ex) {
                     Logger.getLogger(FactionChat.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             } else {
                 log.warning("[FactionChat]: This version of FactionChat might "
                         + "not support the latest factions, please update FactionChat;"

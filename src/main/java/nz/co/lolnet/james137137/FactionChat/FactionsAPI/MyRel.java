@@ -8,7 +8,6 @@ package nz.co.lolnet.james137137.FactionChat.FactionsAPI;
 import nz.co.lolnet.james137137.FactionChat.FactionChat;
 
 /**
- *
  * @author James
  */
 public enum MyRel {
@@ -23,6 +22,17 @@ public enum MyRel {
     ENEMY(10, false, "an enemy", "enemies", "an enemy faction", "enemy factions"), // END OF LIST
     ;
 
+    // -------------------------------------------- //
+    // CONSTRUCT
+    // -------------------------------------------- //
+    private final int value;
+    // Used for friendly fire.
+    private final boolean friend;
+    private final String descPlayerOne;
+    private final String descPlayerMany;
+    private final String descFactionOne;
+    private final String descFactionMany;
+
     private MyRel(final int value, final boolean friend, final String descPlayerOne, final String descPlayerMany, final String descFactionOne, final String descFactionMany) {
         this.value = value;
         this.friend = friend;
@@ -32,41 +42,25 @@ public enum MyRel {
         this.descFactionMany = descFactionMany;
     }
 
-        // -------------------------------------------- //
-    // CONSTRUCT
-    // -------------------------------------------- //
-    private final int value;
-
     public int getValue() {
         return this.value;
     }
-
-    // Used for friendly fire.
-    private final boolean friend;
 
     public boolean isFriend() {
         return this.friend;
     }
 
-    private final String descPlayerOne;
-
     public String getDescPlayerOne() {
         return this.descPlayerOne;
     }
-
-    private final String descPlayerMany;
 
     public String getDescPlayerMany() {
         return this.descPlayerMany;
     }
 
-    private final String descFactionOne;
-
     public String getDescFactionOne() {
         return this.descFactionOne;
     }
-
-    private final String descFactionMany;
 
     public String getDescFactionMany() {
         return this.descFactionMany;

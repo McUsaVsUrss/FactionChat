@@ -8,21 +8,20 @@ package nz.co.lolnet.james137137.FactionChat.FactionsAPI;
 
 
 /**
- *
  * @author James
  */
 public interface FactionsAPI {
-    
-    
+
+
     public String getFactionName(Object player);
-    
+
     public String getFactionID(Object player);
-    
+
     public MyRel getRelationship(Object player1, Object player2);
-    
+
     public boolean isFactionless(Object player);
-    
+
     public String getPlayerTitle(Object player);
-    
+
     public MyRel getPlayerRank(Object player);
 }
