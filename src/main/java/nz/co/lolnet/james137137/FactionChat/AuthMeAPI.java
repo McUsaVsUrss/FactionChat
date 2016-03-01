@@ -21,7 +21,13 @@ class AuthMeAPI {
 
     private static boolean isLoggedIn(Player player) {
         if (enable) {
-            return fr.xephi.authme.api.API.isAuthenticated(player);
+            boolean result = false;
+            try {
+                result = fr.xephi.authme.api.NewAPI.getInstance().isAuthenticated(player);
+            } catch (Exception e) {
+                result = fr.xephi.authme.api.API.isAuthenticated(player);
+            }
+            return result;
         }
         return true;
     }
@@ -30,12 +36,6 @@ class AuthMeAPI {
         if (!enable) {
             return true;
         }
-        if (fr.xephi.authme.settings.Settings.isChatAllowed) {
-            return true;
-        }
-        if (isLoggedIn(player)) {
-            return true;
-        }
-        return false;
+        return isLoggedIn(player);
     }
 }

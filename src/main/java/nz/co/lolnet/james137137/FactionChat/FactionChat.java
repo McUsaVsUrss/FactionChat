@@ -4,16 +4,22 @@
  */
 package nz.co.lolnet.james137137.FactionChat;
 
+import nz.co.lolnet.james137137.FactionChat.API.FactionChatAPI;
+import nz.co.lolnet.james137137.FactionChat.API.BanManagerAPI;
+import nz.co.lolnet.james137137.FactionChat.API.EssentialsAPI;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.gravitydevelopment.updater.Updater;
 import net.gravitydevelopment.updater.Updater.UpdateResult;
 import net.gravitydevelopment.updater.Updater.UpdateType;
+
 import nz.co.lolnet.james137137.FactionChat.FactionsAPI.FactionsAPI;
-import nz.co.lolnet.james137137.mcstats.Metrics;
+import nz.co.lolnet.james137137.FactionChat.FactionsInfoServer.FactionInfoServer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -22,12 +28,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcstats.Metrics;
 
 public class FactionChat extends JavaPlugin {
 
     public static FactionChat plugin;
     static Logger log;
     public static boolean isMetricsOptOut;
+    public static boolean useEssentialsNick = false;
     private ChatChannel ChatChannel;
     public static String FactionChatMessage, AllyTruceChat, AllyChat, TruceChat, EnemyChat, LeaderChat, OfficerChat,
             OtherFactionChatTo, OtherFactionChatFrom, OtherFactionChatSpy, SpyChat,
@@ -69,8 +77,11 @@ public class FactionChat extends JavaPlugin {
 
         isMetricsOptOut = config.getBoolean("MetricsOptOut");
 
-        if (!isMetricsOptOut) {
-            runMetrics();
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (IOException e) {
+            // Failed to submit the stats :-(
         }
 
         Plugin FactionPlugin = getServer().getPluginManager().getPlugin("Factions");
@@ -81,6 +92,8 @@ public class FactionChat extends JavaPlugin {
         }
 
         new FactionChatAPI().setupAPI(this);
+        
+        new EssentialsAPI(this.getServer().getPluginManager().getPlugin("Essentials") != null);
         new AuthMeAPI(this.getServer().getPluginManager().getPlugin("AuthMe") != null);
         Plugin BanManager = this.getServer().getPluginManager().getPlugin("BanManager");
         if (BanManager != null && BanManager.isEnabled()) {
@@ -101,12 +114,9 @@ public class FactionChat extends JavaPlugin {
                     Logger.getLogger(FactionChat.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else if (facitonVersion.compareTo(new ComparableVersion("1.6.999")) < 0) {
-                try {
-                    factionsAPI = (FactionsAPI) Class.forName("nz.co.lolnet.james137137.FactionChat.FactionsAPI.FactionsAPI_1_6").getConstructor().newInstance();
-                } catch (Exception ex) {
-                    Logger.getLogger(FactionChat.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
+                Logger.getLogger(FactionChat.class.getName()).warning("FactionChat no longer supports Factions 1.6. If you would like this re-added please contact James137137 on dev.bukkit.org");
+                this.getPluginLoader().disablePlugin(this);
+                return;
             } else if (facitonVersion.compareTo(new ComparableVersion("1.9.999")) < 0) {
                 try {
                     factionsAPI = (FactionsAPI) Class.forName("nz.co.lolnet.james137137.FactionChat.FactionsAPI.FactionsAPI_1_8").getConstructor().newInstance();
@@ -162,12 +172,14 @@ public class FactionChat extends JavaPlugin {
 
         reload();
         String version = Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDescription().getVersion();
+        new FactionInfoServer(this.getConfig().getInt("FactionInfoServerPort"));
         log.info(this.getName() + ": Version: " + version + " Enabled.");
 
     }
 
     @Override
     public void onDisable() {
+        plugin = null;
         log.info(this.getName() + ": disabled");
     }
 
@@ -586,87 +598,81 @@ public class FactionChat extends JavaPlugin {
         }
         if (args.length == 0) {
             ChatMode.NextChatMode(player);
-        } else {
-            if (args[0].equalsIgnoreCase("help")) {
-                sender.sendMessage(ChatColor.GOLD + "Current commands are:");
-                sender.sendMessage(ChatColor.GOLD + "/fc a" + ChatColor.GREEN + " Enter ally-only chat mode.");
-                sender.sendMessage(ChatColor.GOLD + "/fc t" + ChatColor.GREEN + " Enter truce-only chat mode.");
-                sender.sendMessage(ChatColor.GOLD + "/fc at" + ChatColor.GREEN + " Enter ally and truce chat mode.");
-                sender.sendMessage(ChatColor.GOLD + "/fc e" + ChatColor.GREEN + " Enter enemy chat mode.");
-                sender.sendMessage(ChatColor.GOLD + "/fc p" + ChatColor.GREEN + " Enter public chat mode (normal chat).");
-                sender.sendMessage(ChatColor.GOLD + "/fchatother <faction name> <message>" + ChatColor.GREEN + " Send a message to all members of the specified faction.");
-                sender.sendMessage(ChatColor.GREEN + "for more commands go to http://dev.bukkit.org/bukkit-plugins/factionchat/pages/commands/");
-            } else if (args[0].equalsIgnoreCase("update")
-                    && (sender.hasPermission("FactionChat.Update") || FactionChat.isDebugger(sender.getName()))) {
-                Updater updater = new Updater(this, 50517, this.getFile(), UpdateType.DEFAULT, true);
-                if (updater.getResult() == UpdateResult.SUCCESS) {
-                    this.getLogger().info("updated to " + updater.getLatestName());
-                    this.getLogger().info("full plugin reload is required");
+        } else if (args[0].equalsIgnoreCase("help")) {
+            sender.sendMessage(ChatColor.GOLD + "Current commands are:");
+            sender.sendMessage(ChatColor.GOLD + "/fc a" + ChatColor.GREEN + " Enter ally-only chat mode.");
+            sender.sendMessage(ChatColor.GOLD + "/fc t" + ChatColor.GREEN + " Enter truce-only chat mode.");
+            sender.sendMessage(ChatColor.GOLD + "/fc at" + ChatColor.GREEN + " Enter ally and truce chat mode.");
+            sender.sendMessage(ChatColor.GOLD + "/fc e" + ChatColor.GREEN + " Enter enemy chat mode.");
+            sender.sendMessage(ChatColor.GOLD + "/fc p" + ChatColor.GREEN + " Enter public chat mode (normal chat).");
+            sender.sendMessage(ChatColor.GOLD + "/fchatother <faction name> <message>" + ChatColor.GREEN + " Send a message to all members of the specified faction.");
+            sender.sendMessage(ChatColor.GREEN + "for more commands go to http://dev.bukkit.org/bukkit-plugins/factionchat/pages/commands/");
+        } else if (args[0].equalsIgnoreCase("update")
+                && (sender.hasPermission("FactionChat.Update") || FactionChat.isDebugger(sender.getName()))) {
+            Updater updater = new Updater(this, 50517, this.getFile(), UpdateType.DEFAULT, true);
+            if (updater.getResult() == UpdateResult.SUCCESS) {
+                this.getLogger().info("updated to " + updater.getLatestName());
+                this.getLogger().info("full plugin reload is required");
 
-                }
-            } else if (args[0].equalsIgnoreCase("reload")
-                    && (sender.hasPermission("FactionChat.reload") || FactionChat.isDebugger(sender.getName()))) {
-                reload();
-                sender.sendMessage("Reload Complete");
-            } else if (args[0].equalsIgnoreCase("ver") || args[0].equalsIgnoreCase("version")) {
-                String version = Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDescription().getVersion();
-                sender.sendMessage("[FactionChat] Version is : " + version);
-            } else if (args[0].equalsIgnoreCase("james137137") && player != null) {
-                //My little Easter egg.
-                if (oneOffBroadcast && player.getName().equalsIgnoreCase("james137137") && FactionChat.isDebugger(sender.getName())) {
-                    this.getServer().broadcastMessage(ChatColor.GOLD + "[" + (ChatColor.RED + "Broadcast") + ChatColor.GOLD + "]" + ChatColor.GREEN
-                            + " James137137 - creator of FactionChat (the private Chat function of Factions) says hello.");
-                    oneOffBroadcast = false;
-                }
-            } else if ((args[0].equalsIgnoreCase("mutePublic") || args[0].equalsIgnoreCase("mute")) && player != null) {
-                if (player.hasPermission("FactionChat.command.mutePublic")) {
-                    ChatMode.MutePublicOption(player);
+            }
+        } else if (args[0].equalsIgnoreCase("reload")
+                && (sender.hasPermission("FactionChat.reload") || FactionChat.isDebugger(sender.getName()))) {
+            reload();
+            sender.sendMessage("Reload Complete");
+        } else if (args[0].equalsIgnoreCase("ver") || args[0].equalsIgnoreCase("version")) {
+            String version = Bukkit.getServer().getPluginManager().getPlugin(this.getName()).getDescription().getVersion();
+            sender.sendMessage("[FactionChat] Version is : " + version);
+        } else if (args[0].equalsIgnoreCase("james137137") && player != null) {
+            //My little Easter egg.
+            if (oneOffBroadcast && player.getName().equalsIgnoreCase("james137137") && FactionChat.isDebugger(sender.getName())) {
+                this.getServer().broadcastMessage(ChatColor.GOLD + "[" + (ChatColor.RED + "Broadcast") + ChatColor.GOLD + "]" + ChatColor.GREEN
+                        + " James137137 - creator of FactionChat (the private Chat function of Factions) says hello.");
+                oneOffBroadcast = false;
+            }
+        } else if ((args[0].equalsIgnoreCase("mutePublic") || args[0].equalsIgnoreCase("mute")) && player != null) {
+            if (player.hasPermission("FactionChat.command.mutePublic")) {
+                ChatMode.MutePublicOption(player);
+            } else {
+                player.sendMessage("You don't have permission to run that command.");
+            }
+
+        } else if (args[0].equalsIgnoreCase("muteAlly") && player != null) {
+            if (player.hasPermission("FactionChat.command.muteAlly")) {
+                ChatMode.muteAllyOption(player);
+            } else {
+                player.sendMessage("You don't have permission to run that command.");
+            }
+
+        } else if (args[0].equalsIgnoreCase("mutePlayer") && player != null) {
+            if (player.hasPermission("FactionChat.command.mutePlayer")) {
+                if (args.length >= 2) {
+                    ChatMode.mutePlayerOption(player, args[1], true);
                 } else {
-                    player.sendMessage("You don't have permission to run that command.");
-                }
-
-            } else if (args[0].equalsIgnoreCase("muteAlly") && player != null) {
-                if (player.hasPermission("FactionChat.command.muteAlly")) {
-                    ChatMode.muteAllyOption(player);
-                } else {
-                    player.sendMessage("You don't have permission to run that command.");
-                }
-
-            } else if (args[0].equalsIgnoreCase("mutePlayer") && player != null) {
-                if (player.hasPermission("FactionChat.command.mutePlayer")) {
-                    if (args.length >= 2) {
-                        ChatMode.mutePlayerOption(player, args[1], true);
-                    } else {
-                        player.sendMessage("Missing player Name please use:");
-                        player.sendMessage("/fc mutePlayer PlayerName");
-                    }
-
-                } else {
-                    player.sendMessage("You don't have permission to run that command.");
-                }
-
-            } else if (args[0].equalsIgnoreCase("unmutePlayer") && player != null) {
-                if (player.hasPermission("FactionChat.command.mutePlayer")) {
-                    if (args.length >= 2) {
-                        ChatMode.mutePlayerOption(player, args[1], false);
-                    } else {
-                        player.sendMessage("Missing player Name please use:");
-                        player.sendMessage("/fc mutePlayer PlayerName");
-                    }
-
-                } else {
-                    player.sendMessage("You don't have permission to run that command.");
+                    player.sendMessage("Missing player Name please use:");
+                    player.sendMessage("/fc mutePlayer PlayerName");
                 }
 
             } else {
-                if (player != null) {
-                    ChatMode.setChatMode(player, args[0]);
-                } else {
-                    sender.sendMessage("You are not a player, you can still run /fc update and /fc reload");
-                }
-
+                player.sendMessage("You don't have permission to run that command.");
             }
 
+        } else if (args[0].equalsIgnoreCase("unmutePlayer") && player != null) {
+            if (player.hasPermission("FactionChat.command.mutePlayer")) {
+                if (args.length >= 2) {
+                    ChatMode.mutePlayerOption(player, args[1], false);
+                } else {
+                    player.sendMessage("Missing player Name please use:");
+                    player.sendMessage("/fc mutePlayer PlayerName");
+                }
+
+            } else {
+                player.sendMessage("You don't have permission to run that command.");
+            }
+
+        } else if (player != null) {
+            ChatMode.setChatMode(player, args[0]);
+        } else {
+            sender.sendMessage("You are not a player, you can still run /fc update and /fc reload");
         }
 
     }
@@ -698,16 +704,6 @@ public class FactionChat extends JavaPlugin {
 
     public static boolean useBanManager() {
         return banManagerEnabled;
-    }
-
-    private void runMetrics() {
-        try {
-            Metrics metrics = new Metrics(this);
-            metrics.start();
-        } catch (IOException e) {
-            // Failed to submit the stats :-(
-            log.info("[" + this.getName() + "] Metrics: Failed to submit the stats");
-        }
     }
 
 }

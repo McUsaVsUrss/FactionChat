@@ -1,5 +1,7 @@
 package nz.co.lolnet.james137137.FactionChat;
 
+import nz.co.lolnet.james137137.FactionChat.API.FactionChatAPI;
+import nz.co.lolnet.james137137.FactionChat.API.BanManagerAPI;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -15,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.metadata.Metadatable;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 
@@ -111,16 +114,16 @@ public class FactionChatListener implements Listener {
 
     protected void onPlayerChat(org.bukkit.event.player.AsyncPlayerChatEvent event) {
 
-        if (event.isCancelled()) {
+        if (event.isCancelled() || isNpc(event.getPlayer())) {
             return;
-        }
+        }  
         boolean cancelEvent = onChat(event.getPlayer(), event.getMessage(), event.getRecipients());
         event.setCancelled(cancelEvent);
 
     }
 
     private void onPlayerChat_NonAsync(org.bukkit.event.player.PlayerChatEvent event) {
-        if (event.isCancelled()) {
+        if (event.isCancelled() || isNpc(event.getPlayer())) {
             return;
         }
         boolean cancelEvent = onChat(event.getPlayer(), event.getMessage(), event.getRecipients());
@@ -216,7 +219,7 @@ public class FactionChatListener implements Listener {
         }
 
         for (final Player player : plugin.getServer().getOnlinePlayers()) {
-            
+
             if (ChatMode.mutePublicOptionEnabled && ChatMode.IsPublicMuted(player)) {
 
                 if (player.getName().equals(talkingPlayer.getName())) {
@@ -228,7 +231,7 @@ public class FactionChatListener implements Listener {
             } else if (ChatMode.IsPlayerMutedTarget(player, talkingPlayer)) {
                 recipients.remove(player);
             }
-            
+
         }
 
     }
@@ -320,6 +323,14 @@ public class FactionChatListener implements Listener {
         } else {
             return EventPriority.NORMAL;
         }
+    }
+
+    public static boolean isNpc(Object object) {
+        if (!(object instanceof Metadatable)) {
+            return false;
+        }
+        Metadatable metadatable = (Metadatable) object;
+        return metadatable.hasMetadata("NPC");
     }
 
 }
