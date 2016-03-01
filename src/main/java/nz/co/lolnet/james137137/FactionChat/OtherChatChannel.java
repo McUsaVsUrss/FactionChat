@@ -22,7 +22,7 @@ public class OtherChatChannel {
     }
 
     protected void userAssistantChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -30,7 +30,7 @@ public class OtherChatChannel {
         String[] intput1 = {FactionChatAPI.getPrefix(player) + player.getName() + FactionChatAPI.getSuffix(player) + ChatColor.RESET, message};
         String normalMessage = ChatMode.FormatString(FactionChat.UAChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.UserAssistantChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.UserAssistantChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -39,7 +39,7 @@ public class OtherChatChannel {
     }
 
     protected void jrModChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -47,7 +47,7 @@ public class OtherChatChannel {
         String[] intput1 = {FactionChatAPI.getPrefix(player) + player.getName() + FactionChatAPI.getSuffix(player) + ChatColor.RESET, message};
         String normalMessage = ChatMode.FormatString(FactionChat.JrModChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.JrModChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.JrModChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -56,7 +56,7 @@ public class OtherChatChannel {
     }
 
     protected void modChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -64,7 +64,7 @@ public class OtherChatChannel {
         boolean allowCustomColour = player.hasPermission("essentials.chat.color") || player.hasPermission("FactionChat.Chat.Colour");
         String normalMessage = ChatMode.FormatString(FactionChat.ModChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.ModChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.ModChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -73,7 +73,7 @@ public class OtherChatChannel {
     }
 
     protected void SrModChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -81,7 +81,7 @@ public class OtherChatChannel {
         boolean allowCustomColour = player.hasPermission("essentials.chat.color") || player.hasPermission("FactionChat.Chat.Colour");
         String normalMessage = ChatMode.FormatString(FactionChat.SrModChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.SrModChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.SrModChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -90,7 +90,7 @@ public class OtherChatChannel {
     }
 
     protected void JrAdminChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -98,7 +98,7 @@ public class OtherChatChannel {
         boolean allowCustomColour = player.hasPermission("essentials.chat.color") || player.hasPermission("FactionChat.Chat.Colour");
         String normalMessage = ChatMode.FormatString(FactionChat.JrAdminChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.JrAdminChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.JrAdminChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -107,7 +107,7 @@ public class OtherChatChannel {
     }
 
     protected void adminChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -115,7 +115,7 @@ public class OtherChatChannel {
         boolean allowCustomColour = player.hasPermission("essentials.chat.color") || player.hasPermission("FactionChat.Chat.Colour");
         String normalMessage = ChatMode.FormatString(FactionChat.AdminChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.AdminChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.AdminChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 
@@ -124,7 +124,7 @@ public class OtherChatChannel {
     }
 
     public void VIPChat(Player player, String message) {
-        if (!AuthMeAPI.isAllowToChat(player)) {
+        if (!FunLoginAPI.isAllowToChat(player)) {
             return;
         }
         message = FactionChatAPI.filterChat(player, message);
@@ -132,7 +132,7 @@ public class OtherChatChannel {
         String[] intput1 = {FactionChatAPI.getPrefix(player) + player.getName() + FactionChatAPI.getSuffix(player) + ChatColor.RESET, message};
         String normalMessage = ChatMode.FormatString(FactionChat.VIPChat, intput1, null, allowCustomColour);
         for (Player myplayer : Bukkit.getServer().getOnlinePlayers()) {
-            if ((myplayer.hasPermission("FactionChat.VIPChat") || FactionChat.isDebugger(myplayer.getName())) && AuthMeAPI.isAllowToChat(myplayer)) {
+            if ((myplayer.hasPermission("FactionChat.VIPChat") || FactionChat.isDebugger(myplayer.getName())) && FunLoginAPI.isAllowToChat(myplayer)) {
                 myplayer.sendMessage(normalMessage);
             }
 

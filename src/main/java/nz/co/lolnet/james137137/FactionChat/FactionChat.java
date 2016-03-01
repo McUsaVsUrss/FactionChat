@@ -5,7 +5,6 @@
 package nz.co.lolnet.james137137.FactionChat;
 
 import nz.co.lolnet.james137137.FactionChat.API.FactionChatAPI;
-import nz.co.lolnet.james137137.FactionChat.API.BanManagerAPI;
 import nz.co.lolnet.james137137.FactionChat.API.EssentialsAPI;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +27,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mcstats.Metrics;
 
 public class FactionChat extends JavaPlugin {
 
@@ -74,16 +72,7 @@ public class FactionChat extends JavaPlugin {
         oneOffBroadcast = true;
         FileConfiguration config = getConfig();
         this.saveDefaultConfig();
-
         isMetricsOptOut = config.getBoolean("MetricsOptOut");
-
-        try {
-            Metrics metrics = new Metrics(this);
-            metrics.start();
-        } catch (IOException e) {
-            // Failed to submit the stats :-(
-        }
-
         Plugin FactionPlugin = getServer().getPluginManager().getPlugin("Factions");
         if (FactionPlugin != null) {
             FactionsEnable = true;
@@ -94,7 +83,7 @@ public class FactionChat extends JavaPlugin {
         new FactionChatAPI().setupAPI(this);
         
         new EssentialsAPI(this.getServer().getPluginManager().getPlugin("Essentials") != null);
-        new AuthMeAPI(this.getServer().getPluginManager().getPlugin("AuthMe") != null);
+        new FunLoginAPI(this.getServer().getPluginManager().getPlugin("AuthMe") != null);
         Plugin BanManager = this.getServer().getPluginManager().getPlugin("BanManager");
         if (BanManager != null && BanManager.isEnabled()) {
             if (Double.parseDouble(BanManager.getDescription().getVersion().substring(0, 2)) >= 4.0) {
@@ -329,34 +318,17 @@ public class FactionChat extends JavaPlugin {
             return true;
         }
         if (commandName.equalsIgnoreCase("fco") || commandName.equalsIgnoreCase("fchato")) {
-            if ((sender.hasPermission("FactionChat.OtherChat") || FactionChat.isDebugger(sender.getName()))
-                    && OtherChatEnable) {
-
-                if (FactionChat.useBanManager()) {
-                    if (BanManagerAPI.isMuted((Player) sender)) {
-                        sender.sendMessage(ChatColor.RED + "You have been muted.");
-                        return true;
-                    }
-                }
-
+            if ((sender.hasPermission("FactionChat.OtherChat") || FactionChat.isDebugger(sender.getName())) && OtherChatEnable) {
                 ChatChannel.fchato(sender, args);
-
             } else {
                 sender.sendMessage(ChatColor.DARK_RED + "you need the permission to use that");
             }
-
             return true;
         }
         if ((commandName.equalsIgnoreCase("ff") || commandName.equalsIgnoreCase("fchatf"))
                 && FactionChatEnable) {
             if (args.length == 0) {
                 return false;
-            }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
             }
             Player talkingPlayer = (Player) sender;
             String message = "";
@@ -367,16 +339,9 @@ public class FactionChat extends JavaPlugin {
 
             return true;
         }
-        if ((commandName.equalsIgnoreCase("fat") || commandName.equalsIgnoreCase("fchatat"))
-                && AllyTruceChatEnable) {
+        if ((commandName.equalsIgnoreCase("fat") || commandName.equalsIgnoreCase("fchatat")) && AllyTruceChatEnable) {
             if (args.length == 0) {
                 return false;
-            }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
             }
             Player talkingPlayer = (Player) sender;
             String message = "";
@@ -393,20 +358,12 @@ public class FactionChat extends JavaPlugin {
             if (args.length == 0) {
                 return false;
             }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
-            }
             Player talkingPlayer = (Player) sender;
             String message = "";
             for (int i = 0; i < args.length; i++) {
                 message += args[i] + " ";
             }
-
             ChatChannel.fChatA(talkingPlayer, message);
-
             return true;
         }
 
@@ -415,55 +372,31 @@ public class FactionChat extends JavaPlugin {
             if (args.length == 0) {
                 return false;
             }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
-            }
             Player talkingPlayer = (Player) sender;
             String message = "";
             for (int i = 0; i < args.length; i++) {
                 message += args[i] + " ";
             }
-
             ChatChannel.fChatTruce(talkingPlayer, message);
-
             return true;
         }
 
-        if (((commandName.equalsIgnoreCase("fe") || commandName.equalsIgnoreCase("fchate")) && sender.hasPermission("FactionChat.EnemyChat"))
-                && EnemyChatEnable) {
-
+        if (((commandName.equalsIgnoreCase("fe") || commandName.equalsIgnoreCase("fchate")) && sender.hasPermission("FactionChat.EnemyChat")) && EnemyChatEnable) {
             if (args.length == 0) {
                 return false;
-            }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
             }
             Player talkingPlayer = (Player) sender;
             String message = "";
             for (int i = 0; i < args.length; i++) {
                 message += args[i] + " ";
             }
-
             ChatChannel.fChatE(talkingPlayer, message);
-
             return true;
         }
         if ((commandName.equalsIgnoreCase("fad") || commandName.equalsIgnoreCase("fchatad") && sender.hasPermission("FactionChat.AdminChat"))
                 && AdminChatEnable) {
             if (args.length == 0) {
                 return false;
-            }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
             }
             OtherChatChannel channel = new OtherChatChannel(this);
             Player talkingPlayer = (Player) sender;
@@ -479,12 +412,6 @@ public class FactionChat extends JavaPlugin {
             if (args.length == 0) {
                 return false;
             }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
-            }
             OtherChatChannel channel = new OtherChatChannel(this);
             Player talkingPlayer = (Player) sender;
             String message = "";
@@ -499,12 +426,6 @@ public class FactionChat extends JavaPlugin {
                 && ModChatEnable) {
             if (args.length == 0) {
                 return false;
-            }
-            if (FactionChat.useBanManager()) {
-                if (BanManagerAPI.isMuted((Player) sender)) {
-                    sender.sendMessage(ChatColor.RED + "You have been muted.");
-                    return true;
-                }
             }
             OtherChatChannel channel = new OtherChatChannel(this);
             Player talkingPlayer = (Player) sender;

@@ -1,7 +1,7 @@
 package nz.co.lolnet.james137137.FactionChat;
 
 import nz.co.lolnet.james137137.FactionChat.API.FactionChatAPI;
-import nz.co.lolnet.james137137.FactionChat.API.BanManagerAPI;
+
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -132,12 +132,6 @@ public class FactionChatListener implements Listener {
 
     private boolean onChat(Player talkingPlayer, String msg, Set<Player> recipients) {
         boolean setCancelled = false;
-        if (FactionChat.useBanManager()) {
-            if (BanManagerAPI.isMuted(talkingPlayer)) {
-                return setCancelled;
-            }
-        }
-
         //FPlayer me = (FPlayer)FPlayers.i.get(talkingPlayer);
         String chatmode = ChatMode.getChatMode(talkingPlayer);
         if (!chatmode.equalsIgnoreCase("PUBLIC")) {
